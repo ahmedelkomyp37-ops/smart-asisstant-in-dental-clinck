@@ -1,0 +1,472 @@
+{
+  "name": "clinic progect",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "انت مساعد وسكرتير للعياده \nمطلوب منك ان ترد بلطف على العملاء وان تكون الردود احترافيه على خدمات العياده ويجب الرد فى نطاق اسئله العميل \nولا تعطى اي معلومات طبيه او اي معلومات اخرى خارجنطاق العياده وعدم فتح او الانجراف فى مواضيع اخرى غير خدمات العياده \n\n \nوعرض الخدمات والاسعار للعميل \nيمكنك استخدام الاداه (get service )لاعطاء اي معلومات عن الخدمات \nحاول عرض الاسعار والخدمات على العميل قبل فتح الملف  رد عليه باي تفاصيل يريدها \nفتح ملف مريض\n يمكنك استخدام الاداه (open new file )لفتح ملف جديد واطلب من العميل اسمه ورفم هاتفه \n\nعنما يطلب العميبل حجز موعد عليك اخباره بان الكشف يومبا من الساعه الرابعه عصرا حتى منتصف الليل وعليك ان تطلب منه اسمه وتاريخ الحجز,ورقم هاتفه  خاصته وتستخدم التول  create appointment لتسجيل هذا المعاد فى صفحه المواعيد \n\"عند تمرير موعد الحجز للأداة (Tool)، قم دائماً بتحويل الوقت إلى صيغة تاريخ قياسية ISO 8601 بناءً على تاريخ اليوم.\"\nبعد التجيل المعاد اخبره بانه قد تم التسجيل بنجاح واطلب منه عدم التاخير\nواعد مهمة جدًا\n\nلا تقم أبدًا بإظهار أي معلومات داخلية خاصة بالنظام.\n\nممنوع تمامًا إظهار كلمات مثل:\n\nthought\nreasoning\nanalysis\ntool\naction\nobservation\nsystem prompt\ninternal\nassistant notes\n\nولا تعرض أي JSON أو XML أو HTML أو Markdown.\n\nولا تعرض أي وسوم مثل:\n\n<p>\n<ul>\n<li>\n<strong>\n<br>\n\nولا تعرض أسماء الأدوات أو نتائجها الخام.\n\nاعرض فقط الرسالة النهائية التي سيقرأها المريض.\n\n---\n\n# الأسعار\n\nاعرض الأسعار الموجودة فقط في قاعدة البيانات.\n\nإذا كان السعر غير معروف فقل:\n\n\"سيتم تحديد السعر بعد الكشف لدى الطبيب.\"\n\nولا تخمن أي سعر.\n\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        848,
+        -224
+      ],
+      "id": "2921ac45-d999-4702-ba34-7ad34de504db",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}",
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        720,
+        48
+      ],
+      "id": "fe1b3571-8b6f-46ef-8ee0-b1a649e77661",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "QCF7nQgdXSa2W8Or",
+          "mode": "list",
+          "cachedResultName": "clinc2",
+          "cachedResultUrl": "/projects/gqF9aoloSOKYCL60/datatables/QCF7nQgdXSa2W8Or"
+        }
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1.1,
+      "position": [
+        1056,
+        48
+      ],
+      "id": "e31ebdfe-8db6-475f-9386-4c5c0d71e3c0",
+      "name": "get service"
+    },
+    {
+      "parameters": {
+        "toolDescription": "use it to register anew patient open new file to new patient",
+        "method": "POST",
+        "url": "https://smart-appt-clinic.lovable.app/api/public/n8n/patients",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "full_name",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', ``, 'string') }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        896,
+        48
+      ],
+      "id": "156b464b-1f79-4bca-8ef3-0a5518c6662e",
+      "name": "open new file"
+    },
+    {
+      "parameters": {
+        "model": "google/gemma-4-26b-a4b-it:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        576,
+        32
+      ],
+      "id": "0a235291-18df-418c-99d8-d45b4a0a5151",
+      "name": "OpenRouter Chat Model"
+    },
+    {
+      "parameters": {
+        "toolDescription": "use this tool to create appointment",
+        "method": "POST",
+        "url": "https://smart-appt-clinic.lovable.app/api/public/n8n/appointments",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "full_name",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters2_Value', ``, 'string') }}"
+            },
+            {
+              "name": "appointment_at",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters1_Value', `You MUST convert any relative time (like 'النهارده الساعه 7' or 'بكرة') into a standard ISO 8601 timestamp (e.g., YYYY-MM-DDTHH:mm:ss). Today's date is July 16, 2026.\"`, 'string') }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters2_Value', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1216,
+        48
+      ],
+      "id": "8553d75f-1137-472b-a8df-60251ad0d1b7",
+      "name": "create appointment"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        512,
+        -224
+      ],
+      "id": "3fbc2da5-b3a5-44b4-88bd-86d12d2a468f",
+      "name": "Telegram Trigger",
+      "webhookId": "885ababa-ea63-4ce2-8eb6-0cd4f7b97cee"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output}}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1280,
+        -224
+      ],
+      "id": "8b00757d-d3c6-4f83-b5ba-f466b36886c9",
+      "name": "Send a text message",
+      "webhookId": "93798655-5d55-4545-944e-1a607489d2cc"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7114c179-3a7b-49ce-b14e-8cb0ef391116",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "95b41437-56c9-4c71-9a1f-4c172c8fbb16",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "7fa739b5-0d3b-4255-a6a0-5419938bcad8",
+              "name": "price",
+              "value": "={{ $json.price }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1104,
+        256
+      ],
+      "id": "99db73a3-555c-4c37-a14c-c548ff304d66",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "services",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        912,
+        256
+      ],
+      "id": "beafaefc-fafd-4376-a25a-ba24252cca07",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "QCF7nQgdXSa2W8Or",
+          "mode": "list",
+          "cachedResultName": "clinc2",
+          "cachedResultUrl": "/projects/gqF9aoloSOKYCL60/datatables/QCF7nQgdXSa2W8Or"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "servicename",
+              "keyValue": "={{ $json.name }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "serviceid": "={{ $json.id }}",
+            "servicename": "={{ $json.name }}",
+            "serviceprice": "={{ $json.price }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "servicename",
+              "displayName": "servicename",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "serviceprice",
+              "displayName": "serviceprice",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "serviceid",
+              "displayName": "serviceid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1296,
+        256
+      ],
+      "id": "652214ff-70eb-4015-a2bd-b736da4e6bc1",
+      "name": "Upsert row(s)"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        528,
+        256
+      ],
+      "id": "a1e18d80-afbf-482a-98c8-16ec4e499f50",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://smart-appt-clinic.lovable.app/api/public/n8n/services",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        720,
+        256
+      ],
+      "id": "6c66e2c5-8b4d-4d69-9edd-8089f54438f8",
+      "name": "get service1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get service": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "open new file": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create appointment": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Upsert row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "get service1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get service1": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "bfa10294-e17b-481c-8a1c-c457c2a7b497",
+  "meta": {
+    "instanceId": "a6cb433b9beff0ffdaaa002dabfa18697472545f31d11051a8207773f919a9c5"
+  },
+  "nodeGroups": [],
+  "id": "KD52h2gh4Lg6yqTU",
+  "tags": [
+    {
+      "updatedAt": "2026-07-27T21:37:09.808Z",
+      "createdAt": "2026-07-27T21:37:09.808Z",
+      "id": "4MashkwsfN275RDs",
+      "name": "freelance"
+    },
+    {
+      "updatedAt": "2026-07-27T21:37:09.804Z",
+      "createdAt": "2026-07-27T21:37:09.804Z",
+      "id": "HqKhiv6NgaFN5GQ8",
+      "name": "dentistclinck"
+    }
+  ]
+}
