@@ -1,0 +1,1 @@
+# smart-asisstant-in-dental-clinck
