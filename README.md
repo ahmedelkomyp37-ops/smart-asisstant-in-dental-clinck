@@ -1,1 +1,1 @@
-# smart-asisstant-in-dental-clinck
+# smart-asisstant-in-dental-clinc
